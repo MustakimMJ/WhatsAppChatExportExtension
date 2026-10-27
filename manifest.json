@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "WhatsApp Group & Chat Exporter to Excel",
+  "version": "2.0.0",
+  "description": "Export WhatsApp chats and groups to Excel (.xlsx) with sender names, timestamps, and custom date/time filters.",
+  "permissions": [
+    "activeTab",
+    "downloads",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://web.whatsapp.com/*"
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_title": "WhatsApp Chat & Group Exporter",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "content_scripts": [{
+    "matches": ["https://web.whatsapp.com/*"],
+    "js": ["xlsx.full.min.js", "content.js"],
+    "run_at": "document_idle"
+  }],
+  "web_accessible_resources": [{
+    "resources": ["xlsx.full.min.js"],
+    "matches": ["https://web.whatsapp.com/*"]
+  }]
+}

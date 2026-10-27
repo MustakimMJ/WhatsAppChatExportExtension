@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WhatsApp Chat & Group Exporter</title>
+  <style>
+    :root {
+      --wa-dark: #075e54;
+      --wa-teal: #128c7e;
+      --wa-green: #00a884;
+      --wa-light-green: #e7f8f5;
+      --excel-green: #107c41;
+      --excel-hover: #0c6133;
+      --bg-slate: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      color: var(--text-main);
+      background-color: var(--bg-slate);
+      width: 380px;
+      padding: 0 0 16px 0;
+      line-height: 1.4;
+    }
+
+    /* Header */
+    .app-header {
+      background: linear-gradient(135deg, var(--wa-dark) 0%, var(--wa-teal) 60%, var(--wa-green) 100%);
+      color: #ffffff;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(7, 94, 84, 0.2);
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      backdrop-filter: blur(4px);
+    }
+
+    .brand-title h1 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+
+    .brand-title p {
+      font-size: 11px;
+      opacity: 0.85;
+      font-weight: 400;
+    }
+
+    .excel-badge {
+      background-color: #ffffff;
+      color: var(--excel-green);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Container */
+    .container {
+      padding: 14px 16px 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Chat Info */
+    .chat-info-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .chat-info-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .chat-status-pill {
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: #f1f5f9;
+      color: var(--text-muted);
+    }
+
+    .chat-status-pill.active {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #94a3b8;
+    }
+
+    .chat-status-pill.active .status-dot {
+      background-color: #10b981;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .chat-name-display {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chat-meta-stats {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Filter Form */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .field-label .sub {
+      font-weight: 400;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .input-with-button {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dt-input {
+      flex: 1;
+      padding: 7px 9px;
+      font-size: 12px;
+      font-family: inherit;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background-color: #ffffff;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .dt-input:focus {
+      border-color: var(--wa-teal);
+      box-shadow: 0 0 0 2px rgba(18, 140, 126, 0.15);
+    }
+
+    /* "Now" Button */
+    .btn-now {
+      background: var(--wa-light-green);
+      color: var(--wa-teal);
+      border: 1px solid #bbf7d0;
+      border-radius: var(--radius-sm);
+      padding: 7px 11px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-now:hover {
+      background: var(--wa-teal);
+      color: #ffffff;
+      border-color: var(--wa-teal);
+    }
+
+    .btn-clear {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0 2px;
+    }
+
+    .btn-clear:hover {
+      color: var(--danger);
+    }
+
+    /* Preset Buttons */
+    .presets-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 4px;
+    }
+
+    .preset-pill {
+      background: #f1f5f9;
+      border: 1px solid var(--border-color);
+      color: #334155;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .preset-pill:hover {
+      background: #e2e8f0;
+      color: var(--text-main);
+    }
+
+    .preset-pill.active {
+      background: var(--wa-teal);
+      color: #ffffff;
+      border-color: var(--wa-teal);
+    }
+
+    /* Export Actions */
+    .export-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .btn-primary-excel {
+      background: linear-gradient(135deg, var(--excel-green) 0%, #16a34a 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 11px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 6px rgba(16, 124, 65, 0.25);
+      transition: all 0.15s;
+    }
+
+    .btn-primary-excel:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--excel-hover) 0%, #15803d 100%);
+      box-shadow: 0 3px 10px rgba(16, 124, 65, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary-excel:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-secondary-fetch {
+      background: #ffffff;
+      color: var(--wa-teal);
+      border: 1.5px solid var(--wa-teal);
+      border-radius: var(--radius-md);
+      padding: 9px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      transition: all 0.15s;
+    }
+
+    .btn-secondary-fetch .sub-text {
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    .btn-secondary-fetch:hover:not(:disabled) {
+      background: var(--wa-light-green);
+    }
+
+    .btn-secondary-fetch:disabled,
+    .btn-primary-excel:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Stop Button */
+    .btn-stop {
+      display: none;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+      border-radius: var(--radius-sm);
+      padding: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .btn-stop:hover {
+      background: #fecaca;
+    }
+
+    /* CSV link */
+    .csv-fallback {
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    .btn-csv-link {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .btn-csv-link:hover {
+      color: var(--text-main);
+    }
+
+    /* Status Box */
+    .status-card {
+      margin-top: 2px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      background: #f1f5f9;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      word-break: break-word;
+    }
+
+    .status-card.success {
+      background: #ecfdf5;
+      color: #065f46;
+      border-left: 3px solid #10b981;
+    }
+
+    .status-card.error {
+      background: #fef2f2;
+      color: #991b1b;
+      border-left: 3px solid #ef4444;
+    }
+
+    .status-card.loading {
+      background: #f0fdfa;
+      color: #0f766e;
+      border-left: 3px solid var(--wa-teal);
+    }
+
+    /* Progress bar */
+    .progress-bar-container {
+      display: none;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, var(--wa-teal), var(--excel-green), var(--wa-teal));
+      background-size: 200% 100%;
+      animation: progressAnim 1.5s infinite linear;
+    }
+
+    @keyframes progressAnim {
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+
+    /* Footer info */
+    .footer-note {
+      font-size: 10.5px;
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-title">
+      <div class="brand-icon">💬</div>
+      <div>
+        <h1>WhatsApp Exporter</h1>
+        <p>Chat & Group to Excel (.xlsx)</p>
+      </div>
+    </div>
+    <div class="excel-badge">
+      <span>📊</span> .XLSX
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Active Chat Detection Card -->
+    <div class="card" id="chatCard">
+      <div class="chat-info-header">
+        <span class="chat-info-title">Active Chat</span>
+        <span class="chat-status-pill" id="statusPill">
+          <span class="status-dot"></span>
+          <span id="statusPillText">Checking...</span>
+        </span>
+      </div>
+      <div class="chat-name-display" id="chatName">
+        <span>Selecting chat...</span>
+      </div>
+      <div class="chat-meta-stats" id="chatStats">
+        Open a WhatsApp Web conversation to begin.
+      </div>
+    </div>
+
+    <!-- Date & Time Range Filter -->
+    <div class="card">
+      <div class="chat-info-header" style="margin-bottom: 10px;">
+        <span class="chat-info-title">Date & Time Range</span>
+        <button type="button" class="btn-clear" id="btnClearDates">Clear</button>
+      </div>
+
+      <div class="form-group">
+        <!-- Start Time -->
+        <div>
+          <label for="startTime" class="field-label">
+            <span>Starting Time <span class="sub">(with date)</span></span>
+          </label>
+          <div class="input-with-button">
+            <input type="datetime-local" id="startTime" class="dt-input" placeholder="Start Date & Time">
+          </div>
+        </div>
+
+        <!-- End Time with "Now" option -->
+        <div>
+          <label for="endTime" class="field-label">
+            <span>Ending Time <span class="sub">(with date)</span></span>
+            <span class="sub">Option: Set to Now</span>
+          </label>
+          <div class="input-with-button">
+            <input type="datetime-local" id="endTime" class="dt-input" placeholder="End Date & Time">
+            <button type="button" id="btnNow" class="btn-now" title="Set to current local time">
+              ⏱️ Now
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Presets -->
+        <div>
+          <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Quick Presets:</span>
+          <div class="presets-row">
+            <button type="button" class="preset-pill" data-preset="1h">Past 1h</button>
+            <button type="button" class="preset-pill" data-preset="today">Today</button>
+            <button type="button" class="preset-pill" data-preset="24h">Past 24h</button>
+            <button type="button" class="preset-pill" data-preset="7d">Past 7d</button>
+            <button type="button" class="preset-pill" data-preset="all">All</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export Action Buttons -->
+    <div class="export-actions">
+      <!-- Primary Excel Export -->
+      <button type="button" id="btnExportExcel" class="btn-primary-excel">
+        <span>📊</span> Export to Excel (.xlsx)
+      </button>
+
+      <!-- Auto Fetch Older Messages & Export -->
+      <button type="button" id="btnAutoFetch" class="btn-secondary-fetch">
+        <span>🔄 Auto-Scroll & Export to Excel</span>
+        <span class="sub-text">Scrolls back to load older history up to Start Time</span>
+      </button>
+
+      <!-- Stop button when scrolling -->
+      <button type="button" id="btnStopScroll" class="btn-stop">
+        ⏹️ Stop & Export Collected Messages Now
+      </button>
+
+      <!-- CSV Fallback -->
+      <div class="csv-fallback">
+        <button type="button" id="btnExportCsv" class="btn-csv-link">Or export as CSV</button>
+      </div>
+    </div>
+
+    <!-- Live Status / Notification Card -->
+    <div class="status-card" id="statusCard">
+      <div id="statusText">Ready. Choose a date range or click Export.</div>
+      <div class="progress-bar-container" id="progressBar">
+        <div class="progress-bar"></div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Exports Sender, Date, Time, Type & Message securely in your browser.
+    </div>
+  </div>
+
+  <script src="xlsx.full.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
